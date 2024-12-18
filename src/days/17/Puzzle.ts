@@ -81,7 +81,6 @@ const second = (input: string) => {
   // Function to simulate the program for a given A and check if it matches the expected output
   const simulateRun = (A: number) => {
     const output = simulateProgram(A, initialB, initialC, program);
-    if (output === rawProgram.slice(rawProgram.length - output.length)) console.log(A, output);
     return output === rawProgram.slice(rawProgram.length - output.length);
   };
 
@@ -100,8 +99,8 @@ const second = (input: string) => {
           }
         }
       }
-      console.log(newPossibleA);
-      possibleA = newPossibleA;
+      // Remove 0 to not restart the search
+      possibleA = newPossibleA.filter(a => a !== 0);
     }
 
     return Math.min(...possibleA);
