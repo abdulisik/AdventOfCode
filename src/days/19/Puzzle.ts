@@ -1,13 +1,12 @@
 
-const canConstructDesign = (design: string, patterns: Set<string>): boolean => {
-  const dp = Array(design.length + 1).fill(false);
-  dp[0] = true; // Base case: empty design can always be constructed
+const canConstructDesign = (design: string, patterns: Set<string>): number => {
+  const dp = Array(design.length + 1).fill(0);
+  dp[0] = 1; // Base case: empty design can always be constructed
 
   for (let i = 1; i <= design.length; i++) {
     for (let j = 0; j < i; j++) {
-      if (dp[j] && patterns.has(design.substring(j, i))) {
-        dp[i] = true;
-        break;
+      if (patterns.has(design.substring(j, i))) {
+        dp[i] += dp[j];
       }
     }
   }
@@ -33,9 +32,18 @@ const first = (input: string): number => {
 const expectedFirstSolution = '6';
 
 const second = (input: string) => {
-  return 'solution 2';
+  const [patternsLine, emptyLine, ...designs] = input.trim().split('\n');
+  const patterns = new Set(patternsLine.split(', '));
+
+  let possibleDesignsCount = 0;
+
+  for (const design of designs) {
+    possibleDesignsCount += canConstructDesign(design, patterns);
+  }
+
+  return possibleDesignsCount;
 };
 
-const expectedSecondSolution = 'solution 2';
+const expectedSecondSolution = '16';
 
 export { first, expectedFirstSolution, second, expectedSecondSolution };
