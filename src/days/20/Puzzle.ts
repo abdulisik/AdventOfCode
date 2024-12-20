@@ -62,15 +62,42 @@ const first = (input: string): number => {
         queue.push([nr, nc, steps + 1]);
       }
 
-      // Check possible cheats
-      for (let cheatSteps = 1; cheatSteps <= 2; cheatSteps++) {
-        const cr = r + dr * cheatSteps;
-        const cc = c + dc * cheatSteps;
-        if (cr >= 0 && cr < rows && cc >= 0 && cc < cols && grid[cr][cc] !== '#') {
-          const potentialSaving = shortestPathLength - (steps + cheatSteps + distanceToEnd[cr][cc]);
-          if (potentialSaving >= 100) {
-            timeSavings++;
-          }
+    }
+    timeSavings += exploreCheatPaths(grid, [r, c], distanceToEnd, steps, shortestPathLength, 2);
+  }
+
+  return timeSavings;
+};
+
+const expectedFirstSolution = '0';
+
+const exploreCheatPaths = (grid: string[][], start: [number, number], distanceToEnd: number[][], stepsSoFar: number, shortestPathLength: number, cheatsAllowed: number): number => {
+  const rows = grid.length;
+  const cols = grid[0].length;
+  const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+  const queue: [number, number, number][] = [[start[0], start[1], 0]];
+  const visited = new Set<string>();
+  visited.add(`${start[0]},${start[1]}`);
+
+  let timeSavings = 0;
+
+  while (queue.length > 0) {
+    const [r, c, cheatSteps] = queue.shift()!;
+
+    if (cheatSteps > 0 && grid[r][c] !== '#') {
+      const potentialSaving = shortestPathLength - (stepsSoFar + cheatSteps + distanceToEnd[r][c]);
+      if (potentialSaving >= 100) {
+        timeSavings++;
+      }
+    }
+
+    if (cheatSteps < cheatsAllowed) {
+      for (const [dr, dc] of directions) {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited.has(`${nr},${nc}`)) {
+          visited.add(`${nr},${nc}`);
+          queue.push([nr, nc, cheatSteps + 1]);
         }
       }
     }
@@ -79,12 +106,40 @@ const first = (input: string): number => {
   return timeSavings;
 };
 
-const expectedFirstSolution = '0';
+const second = (input: string): number => {
+  const { grid, start, end } = parseInput(input);
+  const distanceToEnd = reverseBFS(grid, end);
+  const shortestPathLength = distanceToEnd[start[0]][start[1]];
 
-const second = (input: string) => {
-  return 'solution 2';
+  const rows = grid.length;
+  const cols = grid[0].length;
+  const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+  const queue: [number, number, number][] = [[start[0], start[1], 0]];
+  const visited = new Set<string>();
+  visited.add(`${start[0]},${start[1]}`);
+
+  let totalTimeSavings = 0;
+
+  while (queue.length > 0) {
+    const [r, c, steps] = queue.shift()!;
+
+    for (const [dr, dc] of directions) {
+      const nr = r + dr;
+      const nc = c + dc;
+
+      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc] !== '#' && !visited.has(`${nr},${nc}`)) {
+        visited.add(`${nr},${nc}`);
+        queue.push([nr, nc, steps + 1]);
+      }
+    }
+
+    // Explore all possible cheat paths from this point
+    totalTimeSavings += exploreCheatPaths(grid, [r, c], distanceToEnd, steps, shortestPathLength, 20);
+  }
+
+  return totalTimeSavings;
 };
 
-const expectedSecondSolution = 'solution 2';
+const expectedSecondSolution = '0';
 
 export { first, expectedFirstSolution, second, expectedSecondSolution };
